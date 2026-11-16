@@ -2,7 +2,8 @@
 
 F_ij = N_c * sum_k n_k * sum_{c in AA, EE, TT} dln(Omega_c)/dtheta_i * dln(Omega_c)/dtheta_j
 
-with exact derivatives from ``jax.jacrev`` and no prior terms (as in the scripts).
+with exact derivatives from ``jax.jacrev``. Optionally the Gaussian foreground priors
+are added (``with_priors=True``); by default they are not (classic Fisher, as in the scripts).
 """
 import os
 
@@ -27,8 +28,21 @@ def _prediction(f_GeV, theta_vec, model):
     return jnp.stack([AA, AA, TT])          # EE = AA
 
 
-def fisher_matrix(model, params, f_obs=None, n_k=None):
-    """Classic Fisher matrix at ``params`` (no prior terms, channels independent)."""
+def prior_fisher(model):
+    """Fisher matrix of the Gaussian priors: diag(1/sigma^2) for the foreground amplitudes,
+    0 for parameters with uniform priors (log G mu, A_p, A_acc)."""
+    m = get_model(model)
+    return np.diag([1.0 / m.prior[n][2] ** 2 if m.prior[n][0] == "gaussian" else 0.0
+                    for n in m.param_names])
+
+
+def fisher_matrix(model, params, f_obs=None, n_k=None, with_priors=False):
+    """Fisher matrix at ``params`` (channels independent).
+
+    with_priors=False: classic Fisher of the likelihood only.
+    with_priors=True : adds the Gaussian foreground priors (``prior_fisher``), the same
+                       prior information SBI and MCMC use.
+    """
     m = get_model(model)
     if f_obs is None:
         f_obs, n_k = data.frequency_grid(m)
@@ -37,7 +51,8 @@ def fisher_matrix(model, params, f_obs=None, n_k=None):
     fid = np.asarray(_prediction(f, theta, m))                           # (3, n_f)
     jac = np.asarray(jax.jacrev(lambda v: _prediction(f, v, m))(theta))  # (3, n_f, ndim)
     dln = jac / fid[:, :, None]
-    return N_CHUNKS * np.einsum("k,cki,ckj->ij", np.asarray(n_k), dln, dln)
+    F = N_CHUNKS * np.einsum("k,cki,ckj->ij", np.asarray(n_k), dln, dln)
+    return F + prior_fisher(m) if with_priors else F
 
 
 def sigma_logGmu(F):
@@ -49,14 +64,14 @@ def sigma_logGmu(F):
 
 
 def run_fisher(model="full", logGmu_values=DEFAULT_GRID, output_dir=".", output_name=None,
-               verbose=True):
+               with_priors=False, verbose=True):
     """Fisher precision for each injected log10 G mu. Saves the same keys as
     ``fisher_95_intervals.npz`` / ``fisher_nofg_95_intervals.npz``."""
     m = get_model(model)
     f_obs, n_k = data.frequency_grid(m)
     rows = []
     for lg in np.asarray(logGmu_values, float):
-        F = fisher_matrix(m, m.fiducial(logGmu=lg), f_obs, n_k)
+        F = fisher_matrix(m, m.fiducial(logGmu=lg), f_obs, n_k, with_priors=with_priors)
         sig = sigma_logGmu(F)
         prec, lo, hi = sigma_to_precision(sig, lg)
         rows.append(dict(logGmu_inj=lg, sigma_logGmu=sig, lo_logGmu=lo, hi_logGmu=hi,
@@ -65,8 +80,9 @@ def run_fisher(model="full", logGmu_values=DEFAULT_GRID, output_dir=".", output_
             print(f"[fisher {m.name}] logGmu={lg:6.2f}  sigma={sig:.4f}  precision={prec:.4g} %")
     out = {k: np.array([r[k] for r in rows]) for k in rows[0]}
     out["Gmu_inj"] = 10 ** out["logGmu_inj"]
-    name = output_name or ("fisher_95_intervals.npz" if m.name == "full"
-                           else f"fisher_{m.name}_95_intervals.npz")
+    tag = "_priors" if with_priors else ""
+    name = output_name or (f"fisher{tag}_95_intervals.npz" if m.name == "full"
+                           else f"fisher_{m.name}{tag}_95_intervals.npz")
     os.makedirs(output_dir, exist_ok=True)
     path = os.path.join(output_dir, name)
     np.savez(path, **out)

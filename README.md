@@ -60,7 +60,7 @@ Low / high foregrounds: `data.simulate("full", logGmu=-13, fg_sign=-1)` (fiducia
 ```bash
 gwbf-fg reconstruct --model full --logGmu -13 --show-noise      # reconstruction plot
 gwbf-fg scan --model nofg                                        # SBI precision vs Gμ (slow)
-gwbf-fg fisher --model full                                      # Fisher precision vs Gμ
+gwbf-fg fisher --model full [--with-priors]                      # Fisher precision vs Gμ
 gwbf-fg simulate --model full --logGmu -14 --seed 42             # save a dataset
 gwbf-fg mcmc --dataset dataset_full_logGmu_m14p0_seed42.npz      # emcee, full model only
 gwbf-fg plot-precision --summary-dir results/ --mcmc-dir chains/ # all precision bar plots
@@ -79,13 +79,13 @@ Results go to the current folder, or `--output-dir` / `$GWBF_FG_OUTPUT`.
 | `posterior` | load the posteriors (handles the missing `sbi_pipeline` prior class), download, sample |
 | `reconstruct` | spectra of every component for every posterior sample (SBI or MCMC), bands |
 | `scan` | SBI precision vs injected Gμ over noise realisations; MCMC precision from chains |
-| `fisher` | Fisher forecast for any model (jax autodiff, no prior terms) |
+| `fisher` | Fisher forecast for any model (jax autodiff); classic, or with the Gaussian foreground priors (`with_priors=True`) |
 | `mcmc` | emcee with the 1/3 Gaussian + 2/3 log-normal likelihood, full model |
 | `summary` | precision tables, threshold crossings, method comparison |
 | `plotting` | precision bars, reconstruction, noise + PLS, MCMC-vs-SBI corner, 1D posteriors |
 
 Precision is always 100 · (10^hi − 10^lo) / 10^inj for the 95% HDI [lo, hi] of log10 Gμ
-(Fisher: lo, hi = inj ∓ 1.96 σ). Summary files keep the format of the analysis scripts
+(Fisher: lo, hi = inj ∓ 1.96 σ, σ² = (F⁻¹)_GμGμ). Summary files keep the format of the analysis scripts
 (`sbi_*_summary_with_errors.npz`, `fisher_*95_intervals.npz`), so old results plot directly.
 
 ## Paper figures

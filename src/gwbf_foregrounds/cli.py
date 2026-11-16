@@ -39,7 +39,7 @@ def cmd_fisher(args):
     from . import fisher
 
     grid = fisher.np.arange(args.logGmu_min, args.logGmu_max + 1e-9, args.step)
-    fisher.run_fisher(args.model, grid, output_dir=args.output_dir)
+    fisher.run_fisher(args.model, grid, output_dir=args.output_dir, with_priors=args.with_priors)
 
 
 def cmd_mcmc(args):
@@ -147,6 +147,9 @@ def main(argv=None):
         sp.add_argument("--step", type=float, default=0.25)
         sp.add_argument("--n-datasets", type=int, default=20)
         sp.add_argument("--n-post", type=int, default=10_000)
+        if name == "fisher":
+            sp.add_argument("--with-priors", action="store_true",
+                            help="add the Gaussian foreground priors to the Fisher matrix")
         sp.set_defaults(func=func)
 
     sp = sub.add_parser("mcmc", help="emcee run, full model only")

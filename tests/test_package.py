@@ -240,3 +240,15 @@ def test_gamma_coverage_is_uniform_for_exact_posterior():
     xs = torch.as_tensor(thetas + rng.standard_normal(thetas.shape))
     g = gamma_coverage_all(GaussPost(), thetas, xs, ["a", "b"], n_post_samples=400)
     assert kstest(g["a"], "uniform").pvalue > 0.01 and kstest(g["b"], "uniform").pvalue > 0.01
+
+
+def test_fisher_with_priors_adds_prior_diagonal():
+    m = models.FULL
+    p = m.fiducial(logGmu=-12.0)
+    f_obs, n_k = data.frequency_grid("full")
+    F0 = fisher.fisher_matrix(m, p, f_obs, n_k)
+    F1 = fisher.fisher_matrix(m, p, f_obs, n_k, with_priors=True)
+    expected = np.array([0, 0, 0, 1 / 0.21**2, 1 / 0.344**2, 1 / 0.17**2, 1 / 0.5**2])
+    np.testing.assert_allclose(np.diag(F1 - F0), expected, rtol=1e-10)
+    assert fisher.sigma_logGmu(F1) <= fisher.sigma_logGmu(F0)
+    np.testing.assert_array_equal(fisher.prior_fisher(models.NOFG), np.zeros((3, 3)))
