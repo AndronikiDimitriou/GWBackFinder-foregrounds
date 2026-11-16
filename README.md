@@ -90,18 +90,16 @@ Precision is always 100 · (10^hi − 10^lo) / 10^inj for the 95% HDI [lo, hi] o
 
 ## Paper figures
 
-The notebook [`examples/paper_figures.ipynb`](examples/paper_figures.ipynb) makes Table II and Figs. 1–5
+The notebook [`examples/paper_figures.ipynb`](examples/paper_figures.ipynb) makes Table II and Figs. 2–4
 of [arXiv:2607.15219](https://arxiv.org/abs/2607.15219) from the inputs in [`results/`](results/)
 (the trained posteriors are downloaded automatically); the plots are shown in the notebook.
 The figures are saved as PDF in [`figures/`](figures/):
 
 | Paper | File |
 |---|---|
-| Fig. 1 — SBI vs MCMC at Gμ = 10⁻¹⁴ | [`fig_corner_logGmu_m14p0.pdf`](figures/fig_corner_logGmu_m14p0.pdf) |
 | Fig. 2 — reconstructed spectra at Gμ = 10⁻¹⁴ | [`fig2_reconstruction.pdf`](figures/fig2_reconstruction.pdf) |
-| Fig. 3 — precision: foreground budgets / amplitudes ±1σ | [`fig3_precision.pdf`](figures/fig3_precision.pdf) |
+| Fig. 3 — precision: upper, no fg / WD + SOBHB / all fg; lower, amplitudes −1σ / fiducial / +1σ | [`fig3_precision.pdf`](figures/fig3_precision.pdf) |
 | Fig. 4 — SBI vs MCMC vs Fisher | [`fig4_validation.pdf`](figures/fig4_validation.pdf) |
-| Fig. 5 — SBI vs MCMC at Gμ = 10⁻¹³, 10⁻¹² | [`fig_corner_logGmu_m13p0.pdf`](figures/fig_corner_logGmu_m13p0.pdf), [`fig_corner_logGmu_m12p0.pdf`](figures/fig_corner_logGmu_m12p0.pdf) |
 
 ## Training a network
 
