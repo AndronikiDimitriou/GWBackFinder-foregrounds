@@ -1,6 +1,6 @@
 # Figures
 
-PDF figures made by [`examples/paper_figures.ipynb`](../examples/paper_figures.ipynb) from the inputs in [`results/`](../results/).
+PDF figures made by [`examples/05_paper_figures.ipynb`](../examples/05_paper_figures.ipynb) from the inputs in [`results/`](../results/).
 
 | File | Paper |
 |---|---|

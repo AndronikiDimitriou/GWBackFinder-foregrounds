@@ -252,3 +252,17 @@ def test_fisher_with_priors_adds_prior_diagonal():
     np.testing.assert_allclose(np.diag(F1 - F0), expected, rtol=1e-10)
     assert fisher.sigma_logGmu(F1) <= fisher.sigma_logGmu(F0)
     np.testing.assert_array_equal(fisher.prior_fisher(models.NOFG), np.zeros((3, 3)))
+
+
+def test_vectorized_mcmc_posterior_matches_reference():
+    from gwbf_foregrounds import mcmc
+
+    ds = data.simulate("full", logGmu=-13.0, seed=1)
+    _, n_k = data.frequency_grid("full")
+    fast = mcmc.make_vectorized_log_posterior(ds.f_obs, ds.D_AA, ds.D_EE, ds.D_TT, n_k)
+    rng = np.random.default_rng(0)
+    th = np.array(models.FULL.theta(ds.params)) + 0.02 * rng.standard_normal((4, 7))
+    ref = [mcmc.log_posterior(t, ds.f_obs, ds.D_AA, ds.D_EE, ds.D_TT, n_k) for t in th]
+    np.testing.assert_allclose(fast(th), ref, rtol=1e-9)
+    bad = th.copy(); bad[0, 0] = -30.0          # outside the uniform prior
+    assert fast(bad)[0] == -np.inf

@@ -1,134 +1,87 @@
 # GWBackFinder-foregrounds
 
-Measuring the cosmic-string tension Gμ with LISA in the presence of astrophysical foregrounds.
+Measuring the cosmic-string tension Gμ with LISA in the presence of astrophysical foregrounds,
+with simulation-based inference. Code, trained networks and figures of
+*Cosmic string gravitational wave backgrounds at LISA: II. Reconstruction of conventional signals
+over astrophysical foregrounds* ([arXiv:2607.15219](https://arxiv.org/abs/2607.15219)).
 
-This package is the companion of [GWBackFinder](https://github.com/AndronikiDimitriou/GWBackFinder)
-([arXiv:2309.08430](https://arxiv.org/abs/2309.08430)). The two use different methods:
-
-|  | GWBackFinder | GWBackFinder-foregrounds |
-|---|---|---|
-| Signal model | model-independent: 26-slope piecewise power law | parametric: cosmic strings (BOS) with tension Gμ |
-| Foregrounds | — | Galactic WDs, SOBHBs, extragalactic WDs, EMRIs (inferred), MBHBs (fixed) |
-| Posterior | two conditional networks: TT (noise), then AA given noise | one joint network over all parameters, AA + EE + TT |
-| LISA response | analytic | exact tabulated response |
-| Cross-checks | — | MCMC (emcee) and Fisher matrix |
+Companion of [GWBackFinder](https://github.com/AndronikiDimitriou/GWBackFinder), which reconstructs
+the spectral shape model-independently; here the signal is a cosmic-string background and Gμ is inferred
+jointly with the LISA noise and the foreground amplitudes (WDs, SOBHBs, ExWDs, EMRIs; MBHBs fixed),
+with MCMC and Fisher cross-checks.
 
 ## Install
 
 ```bash
 git clone https://github.com/AndronikiDimitriou/GWBackFinder-foregrounds.git
 cd GWBackFinder-foregrounds
-pip install -e ".[all]"     # numpy, scipy, jax, torch, sbi 0.25, emcee, corner, pytest
-pytest                      # ~30 s
+pip install -e ".[all]"
 ```
 
-The trained posteriors (~230 MB each) are too large for git. They are attached to the
-[`posteriors-v1` release](https://github.com/AndronikiDimitriou/GWBackFinder-foregrounds/releases/tag/posteriors-v1)
-and downloaded automatically the first time they are needed, into `~/.cache/gwbf_foregrounds`
-(change with `GWBF_FG_CACHE`). The download is checked against a SHA-256 checksum.
-To download them in advance: `gwbf-fg fetch`. Any function also accepts a local `.pkl` path instead.
-
-## The three models
-
-| Name | Parameters | Components |
-|---|---|---|
-| `full` | log Gμ, A_p, A_acc, log A_Gal, log A_ExB, log A_ExWB, log A_EMRI | strings + WDs, SOBHBs, ExWDs, EMRIs + MBHBs fixed (HS scenario) |
-| `gbexb` | log Gμ, A_p, A_acc, log A_Gal, log A_ExB | strings + WDs, SOBHBs |
-| `nofg` | log Gμ, A_p, A_acc | strings only |
-
-Priors (as trained): log Gμ ~ U(−18, −9), A_p ~ U(12, 18), A_acc ~ U(2.4, 3.6),
-log A_Gal ~ N(−7.84, 0.21), log A_ExB ~ N(−12.38, 0.344), log A_ExWB ~ N(−11.0554, 0.17),
-log A_EMRI ~ N(0, 0.5).
+The trained networks (~230 MB each) are downloaded automatically from the
+[release](https://github.com/AndronikiDimitriou/GWBackFinder-foregrounds/releases/tag/posteriors-v1)
+on first use. Needs `sbi` 0.25, so use a separate environment from GWBackFinder (`sbi` 0.22).
 
 ## Quick start
 
 ```python
-from gwbf_foregrounds import FULL, data, posterior, reconstruct
+from gwbf_foregrounds import data, posterior, reconstruct
 from gwbf_foregrounds.plotting.spectra import plot_reconstruction
 
-ds   = data.simulate("full", logGmu=-13, seed=0)            # mock LISA data (AA, EE, TT)
-post = posterior.load_posterior("full")                     # downloads on first use
-s    = posterior.sample(post, ds, n=1000)                   # (1000, 7) samples
-rec  = reconstruct.reconstruct(s, "full", ds.f_obs, truth=ds.params)
-plot_reconstruction(rec, out="reconstruction.pdf")          # every component + noise, 95% bands
+ds   = data.simulate("full", logGmu=-13, seed=0)       # mock LISA data
+post = posterior.load_posterior("full")                # trained network
+s    = posterior.sample(post, ds, n=1000)              # posterior samples
+plot_reconstruction(reconstruct.reconstruct(s, "full", ds.f_obs, truth=ds.params))
 ```
 
-Low / high foregrounds: `data.simulate("full", logGmu=-13, fg_sign=-1)` (fiducial −1σ) or `+1`.
+## Tutorials
+
+The notebooks in [`examples/`](examples/) are saved with their outputs, so they can be read on GitHub.
+
+| Notebook | What it shows |
+|---|---|
+| [01 Quick start](examples/01_quickstart.ipynb) | models, simulating data, posterior samples, precision on Gμ, reconstructing every component |
+| [02 Precision and Fisher](examples/02_precision_and_fisher.ipynb) | precision vs Gμ over noise realisations, Fisher forecasts (with and without priors), plots and tables |
+| [03 MCMC](examples/03_mcmc.ipynb) | emcee on the same dataset as SBI, comparison |
+| [04 Training](examples/04_training.ipynb) | simulating a training set and training a network |
+| [05 Paper figures](examples/05_paper_figures.ipynb) | Table II and Figs. 2–4 of the paper from [`results/`](results/); PDFs in [`figures/`](figures/) |
+
+## Models
+
+| Name | Parameters | Foregrounds |
+|---|---|---|
+| `full` | log Gμ, A_p, A_acc, log A_Gal, log A_ExB, log A_ExWB, log A_EMRI | WDs, SOBHBs, ExWDs, EMRIs + MBHBs fixed (HS scenario) |
+| `gbexb` | log Gμ, A_p, A_acc, log A_Gal, log A_ExB | WDs, SOBHBs |
+| `nofg` | log Gμ, A_p, A_acc | none |
+
+Priors: log Gμ ~ U(−18, −9), A_p ~ U(12, 18), A_acc ~ U(2.4, 3.6), log A_Gal ~ N(−7.84, 0.21),
+log A_ExB ~ N(−12.38, 0.344), log A_ExWB ~ N(−11.0554, 0.17), log A_EMRI ~ N(0, 0.5).
+
+Precision on Gμ: 100 · (10^hi − 10^lo) / 10^inj for the 95% HDI [lo, hi] of log10 Gμ.
 
 ## Command line
 
 ```bash
-gwbf-fg reconstruct --model full --logGmu -13 --show-noise      # reconstruction plot
-gwbf-fg scan --model nofg                                        # SBI precision vs Gμ (slow)
-gwbf-fg fisher --model full [--with-priors]                      # Fisher precision vs Gμ
-gwbf-fg simulate --model full --logGmu -14 --seed 42             # save a dataset
-gwbf-fg mcmc --dataset dataset_full_logGmu_m14p0_seed42.npz      # emcee, full model only
-gwbf-fg plot-precision --summary-dir results/ --mcmc-dir chains/ # all precision bar plots
+gwbf-fg reconstruct --model full --logGmu -13 --show-noise    # reconstruction plot
+gwbf-fg scan --model full                                      # SBI precision vs Gμ (hours)
+gwbf-fg fisher --model full --with-priors                      # Fisher precision vs Gμ
+gwbf-fg mcmc --logGmu -12                                      # emcee, full model
+gwbf-fg train --model full                                     # simulate + train (see notebook 04)
+gwbf-fg fetch                                                  # download the trained networks
 ```
 
-Results go to the current folder, or `--output-dir` / `$GWBF_FG_OUTPUT`.
+## Package contents
 
-## What is in the package
+`physics/` (LISA noise and response, string spectra, foregrounds, mock data; unchanged from the
+analysis code except import paths) · `models` · `data` · `spectra` · `posterior` · `reconstruct` ·
+`scan` · `fisher` · `mcmc` · `train` · `summary` · `plotting`.
 
-| Module | Content |
-|---|---|
-| `physics/` | `lisa.py`, `GW_foregrounds.py`, `GW_backgrounds.py`, `cosmicstrings.py`, `cosmo.py`, `data_processing.py` and their data tables, unchanged except for import paths |
-| `models` | the three models: parameters, settings, priors, fiducials |
-| `data` | simulate datasets, network input, save/load (also reads the old `dataset_logGmu_*.npz`) |
-| `spectra` | total signal, each component, noise |
-| `posterior` | load the posteriors (handles the missing `sbi_pipeline` prior class), download, sample |
-| `reconstruct` | spectra of every component for every posterior sample (SBI or MCMC), bands |
-| `scan` | SBI precision vs injected Gμ over noise realisations; MCMC precision from chains |
-| `fisher` | Fisher forecast for any model (jax autodiff); classic, or with the Gaussian foreground priors (`with_priors=True`) |
-| `mcmc` | emcee with the 1/3 Gaussian + 2/3 log-normal likelihood, full model |
-| `summary` | precision tables, threshold crossings, method comparison |
-| `plotting` | precision bars, reconstruction, noise + PLS, MCMC-vs-SBI corner, 1D posteriors |
-
-Precision is always 100 · (10^hi − 10^lo) / 10^inj for the 95% HDI [lo, hi] of log10 Gμ
-(Fisher: lo, hi = inj ∓ 1.96 σ, σ² = (F⁻¹)_GμGμ). Summary files keep the format of the analysis scripts
-(`sbi_*_summary_with_errors.npz`, `fisher_*95_intervals.npz`), so old results plot directly.
-
-## Paper figures
-
-The notebook [`examples/paper_figures.ipynb`](examples/paper_figures.ipynb) makes Table II and Figs. 2–4
-of [arXiv:2607.15219](https://arxiv.org/abs/2607.15219) from the inputs in [`results/`](results/)
-(the trained posteriors are downloaded automatically); the plots are shown in the notebook.
-The figures are saved as PDF in [`figures/`](figures/):
-
-| Paper | File |
-|---|---|
-| Fig. 2 — reconstructed spectra at Gμ = 10⁻¹⁴ | [`fig2_reconstruction.pdf`](figures/fig2_reconstruction.pdf) |
-| Fig. 3 — precision: upper, no fg / WD + SOBHB / all fg; lower, amplitudes −1σ / fiducial / +1σ | [`fig3_precision.pdf`](figures/fig3_precision.pdf) |
-| Fig. 4 — SBI vs MCMC vs Fisher | [`fig4_validation.pdf`](figures/fig4_validation.pdf) (both Fisher versions), [`…_fisher_priors.pdf`](figures/fig4_validation_fisher_priors.pdf), [`…_fisher_classic.pdf`](figures/fig4_validation_fisher_classic.pdf) |
-
-## Training a network
-
-```bash
-gwbf-fg train --model full                       # simulate 500 000 + train (defaults = paper's full network)
-gwbf-fg train --model full --simulate-only       # step 1 only, e.g. on a cluster; resumable
-gwbf-fg train --model full --train-only          # step 2 on the saved simulations
-```
-
-or in Python: `train.simulate_training_set("full", ...)` then `train.train("full", ...)`.
-Simulations are saved in chunks (`training_data/<model>/chunk_*.npz`) and run in parallel;
-an interrupted run continues where it stopped. One simulation takes ~2 s on one core,
-so 500 000 are ~250 core-hours. The trained posterior, its loss history and a `model_info.txt`
-are written to `trained/<model>/`.
-
-Defaults, from the training record of the released full network: NPE with a neural spline flow
-(10 transforms, 300 hidden features, no embedding net), batch 256, learning rate 1e-5,
-at most 1000 epochs, stop after 30 epochs without improvement, 10% validation, the priors above.
-The original training code is not included, so a network trained here is comparable to,
-not identical with, the released one.
-
-## Tests
-
-The tests compare the package with reference values produced by the original analysis
-code: simulated data for all three models, signal and noise spectra, and the saved Fisher
-precisions agree to 1e-10 or better.
+Tests (`pytest`) compare the package with reference values produced by the original analysis code.
 
 ## Citation
 
-If you use this code, please cite the paper (in preparation) and
-A. Dimitriou, D. G. Figueroa, B. Zaldívar, *Fast Likelihood-free Reconstruction of Gravitational Wave Backgrounds*,
-[arXiv:2309.08430](https://arxiv.org/abs/2309.08430).
+A. Dimitriou, D. G. Figueroa, P. Simakachorn, I. Stomberg, B. Zaldívar, *Cosmic string gravitational wave
+backgrounds at LISA: II. Reconstruction of conventional signals over astrophysical foregrounds*,
+[arXiv:2607.15219](https://arxiv.org/abs/2607.15219), and
+A. Dimitriou, D. G. Figueroa, B. Zaldívar, *Fast Likelihood-free Reconstruction of Gravitational Wave
+Backgrounds*, [arXiv:2309.08430](https://arxiv.org/abs/2309.08430).
