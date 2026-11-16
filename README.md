@@ -99,7 +99,7 @@ The figures are saved as PDF in [`figures/`](figures/):
 |---|---|
 | Fig. 2 — reconstructed spectra at Gμ = 10⁻¹⁴ | [`fig2_reconstruction.pdf`](figures/fig2_reconstruction.pdf) |
 | Fig. 3 — precision: upper, no fg / WD + SOBHB / all fg; lower, amplitudes −1σ / fiducial / +1σ | [`fig3_precision.pdf`](figures/fig3_precision.pdf) |
-| Fig. 4 — SBI vs MCMC vs Fisher | [`fig4_validation.pdf`](figures/fig4_validation.pdf) |
+| Fig. 4 — SBI vs MCMC vs Fisher | [`fig4_validation.pdf`](figures/fig4_validation.pdf) (both Fisher versions), [`…_fisher_priors.pdf`](figures/fig4_validation_fisher_priors.pdf), [`…_fisher_classic.pdf`](figures/fig4_validation_fisher_classic.pdf) |
 
 ## Training a network
 
