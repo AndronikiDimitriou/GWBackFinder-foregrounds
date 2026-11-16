@@ -91,9 +91,33 @@ Precision is always 100 · (10^hi − 10^lo) / 10^inj for the 95% HDI [lo, hi] o
 
 ## Paper figures
 
+All figures are in [`figures/`](figures/) (PDF + PNG preview). They are made with
+
 ```bash
 python examples/paper_figures.py --summaries results/ --mcmc chains/ --out figures/
 ```
+
+**Precision on Gμ, with and without foregrounds, with MCMC and Fisher checks**
+
+![precision](figures/sbi_precision_normal_with_mcmc_fisher.png)
+
+**No foregrounds / WD + SOBHB only / all foregrounds**
+
+![precision gbexb](figures/sbi_precision_nofg_gbexb_fullfg.png)
+
+**Foregrounds at fiducial −1σ / fiducial / +1σ**
+
+![low normal high](figures/sbi_precision_low_normal_high.png)
+
+**Reconstruction of every component at Gμ = 10⁻¹⁴** (SBI 95% bands, MCMC 95% dotted, injected dashed)
+
+![reconstruction](figures/reconstruction_all_logGmu_m14p0.png)
+
+**MCMC vs SBI at Gμ = 10⁻¹⁴** (same dataset for both)
+
+![corner](figures/corner_hdi_logGmu_m14p0_filtered.png)
+
+See [`figures/README.md`](figures/README.md) for what each file shows and how it was made.
 
 ## Coverage
 
