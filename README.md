@@ -43,7 +43,7 @@ The notebooks in [`examples/`](examples/) are saved with their outputs, so they 
 | [01 Quick start](examples/01_quickstart.ipynb) | models, simulating data, posterior samples, precision on Gμ, reconstructing every component |
 | [02 Precision and Fisher](examples/02_precision_and_fisher.ipynb) | precision vs Gμ over noise realisations, Fisher forecasts (with and without priors), plots and tables |
 | [03 MCMC](examples/03_mcmc.ipynb) | emcee on the same dataset as SBI, comparison |
-| [04 Training](examples/04_training.ipynb) | simulating a training set and training a network |
+| [04 Training](examples/04_training.ipynb) | training record and loss curves of the released full network; simulating a training set and training a network |
 | [05 Paper figures](examples/05_paper_figures.ipynb) | Table II and Figs. 2–4 of the paper from [`results/`](results/); PDFs in [`figures/`](figures/) |
 
 ## Models

@@ -1,0 +1,42 @@
+{
+  "variable": {
+    "logGmu": {
+      "distribution": "uniform",
+      "min": -18,
+      "max": -9
+    },
+    "A_p": {
+      "distribution": "uniform",
+      "min": 12.0,
+      "max": 18.0
+    },
+    "A_acc": {
+      "distribution": "uniform",
+      "min": 2.4000000000000004,
+      "max": 3.5999999999999996
+    },
+    "logA_Gal": {
+      "distribution": "gaussian",
+      "mean": -7.84,
+      "std": 0.21
+    },
+    "logA_ExB": {
+      "distribution": "gaussian",
+      "mean": -12.38,
+      "std": 0.344
+    },
+    "logA_ExWB": {
+      "distribution": "gaussian",
+      "mean": -11.0554,
+      "std": 0.17
+    },
+    "logA_EMRI": {
+      "distribution": "gaussian",
+      "mean": 0,
+      "std": 0.5
+    }
+  },
+  "fixed": {
+    "logA_MBHB": 0.0
+  }
+}

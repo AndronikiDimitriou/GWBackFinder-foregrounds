@@ -9,3 +9,4 @@ PDF figures made by [`examples/05_paper_figures.ipynb`](../examples/05_paper_fig
 | `fig4_validation` | Fig. 4: SBI (bars, std over 20 realisations), MCMC (red), Fisher with Gaussian foreground priors (filled stars) and without (open stars) |
 | `fig4_validation_fisher_priors`, `fig4_validation_fisher_classic` | Fig. 4 with only the Fisher with priors / only the classic Fisher |
 | `sbi_precision_fg_vs_nofg`, `lisa_noise_pls_AA_TT`, `reconstruction_gbexb_logGmu_m12p0` | extra |
+| `training_curve_full` | training and validation loss of the released full-foreground network (notebook 04) |
