@@ -210,7 +210,8 @@ def plot_paper_fig4(full, mcmc=None, fisher=None, out=None, logGmu_range=(-16, -
     Fisher (green stars), integer injections only.
 
     mcmc   : (logGmu, precision) arrays, e.g. ``scan.mcmc_precision(chain_files)``
-    fisher : path/dict with 'logGmu_inj', 'precision'
+    fisher : path/dict with 'logGmu_inj', 'precision', or several as {label: path/dict}
+             (e.g. {"Fisher + priors": ..., "Fisher": ...}; up to three marker styles)
     """
     full = _load(full)
     m = _select(full, *logGmu_range, integers_only=True)
@@ -229,10 +230,16 @@ def plot_paper_fig4(full, mcmc=None, fisher=None, out=None, logGmu_range=(-16, -
         k = _in(mx)
         ax.scatter(mx[k], my[k], marker="o", s=30, color="red", label="MCMC", zorder=3)
     if fisher is not None:
-        f = _load(fisher)
-        k = _in(f["logGmu_inj"])
-        ax.scatter(f["logGmu_inj"][k], f["precision"][k], marker="*", s=90, color="#149331",
-                   edgecolor="black", linewidth=0.5, label="Fisher", zorder=4)
+        # one Fisher set, or several as {label: source}
+        sets = fisher if isinstance(fisher, dict) and "precision" not in fisher else {"Fisher": fisher}
+        styles = [dict(marker="*", s=90, color="#149331", edgecolor="black"),
+                  dict(marker="*", s=90, color="white", edgecolor="#149331"),
+                  dict(marker="^", s=50, color="#0A5C36", edgecolor="black")]
+        for (label, src), st in zip(sets.items(), styles):
+            f = _load(src)
+            k = _in(f["logGmu_inj"])
+            ax.scatter(f["logGmu_inj"][k], f["precision"][k], linewidth=0.8, label=label,
+                       zorder=4, **st)
     ax.errorbar(x, p, yerr=e, fmt="none", ecolor="black", elinewidth=1.2, capsize=3,
                 capthick=1.2, zorder=10)
     ax.set_yscale("log")
