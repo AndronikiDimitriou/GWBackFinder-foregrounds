@@ -9,5 +9,4 @@ Made by [`examples/paper_figures.ipynb`](../examples/paper_figures.ipynb) from t
 | `fig3_precision` | Fig. 3: upper, no foregrounds / WD + SOBHB / all foregrounds; lower, foreground amplitudes at fiducial −1σ / fiducial / +1σ |
 | `fig4_validation` | Fig. 4: SBI (bars, std over 20 realisations), MCMC (red), Fisher (green, classic Fisher) |
 | `fig_corner_logGmu_m13p0`, `fig_corner_logGmu_m12p0` | Fig. 5 |
-| `fig6_pp_nofg`, `fig7_pp_full` | Figs. 6, 7: P–P coverage plots (500 test datasets per network) |
 | `sbi_precision_fg_vs_nofg`, `lisa_noise_pls_AA_TT`, `reconstruction_gbexb_logGmu_m12p0` | extra |

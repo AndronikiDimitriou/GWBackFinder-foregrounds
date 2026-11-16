@@ -81,9 +81,8 @@ Results go to the current folder, or `--output-dir` / `$GWBF_FG_OUTPUT`.
 | `scan` | SBI precision vs injected Gμ over noise realisations; MCMC precision from chains |
 | `fisher` | Fisher forecast for any model (jax autodiff, no prior terms) |
 | `mcmc` | emcee with the 1/3 Gaussian + 2/3 log-normal likelihood, full model |
-| `coverage` | per-parameter coverage (HPD rank), TARP, SBC |
 | `summary` | precision tables, threshold crossings, method comparison |
-| `plotting` | precision bars, reconstruction, noise + PLS, MCMC-vs-SBI corner, 1D posteriors, coverage, TARP, SBC |
+| `plotting` | precision bars, reconstruction, noise + PLS, MCMC-vs-SBI corner, 1D posteriors |
 
 Precision is always 100 · (10^hi − 10^lo) / 10^inj for the 95% HDI [lo, hi] of log10 Gμ
 (Fisher: lo, hi = inj ∓ 1.96 σ). Summary files keep the format of the analysis scripts
@@ -111,20 +110,7 @@ figures of [arXiv:2607.15219](https://arxiv.org/abs/2607.15219) from the inputs 
 
 ![fig4](figures/fig4_validation.png)
 
-Fig. 5 (Gμ = 10⁻¹³, 10⁻¹²) and the P–P coverage plots (Figs. 6, 7; inputs from
-`examples/run_coverage.py`) are in the notebook and in `figures/`.
-
-## Coverage
-
-```python
-from gwbf_foregrounds import FULL, coverage, posterior
-from gwbf_foregrounds.plotting.coverage import plot_coverage
-
-post = posterior.load_posterior("full")
-thetas, xs = coverage.build_test_set("full", n_test=300)
-g = coverage.gamma_coverage_all(post, thetas, xs, FULL.param_names)
-plot_coverage(list(g.values()), FULL.labels(), out="coverage_full.pdf")
-```
+Fig. 5 (Gμ = 10⁻¹³, 10⁻¹²) is in the notebook and in `figures/`.
 
 ## Tests
 
