@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "GWBackFinder-foregrounds"
+version = "0.1.0"
+description = "Cosmic-string tension and astrophysical foregrounds with LISA: SBI, MCMC, Fisher and the paper figures"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Androniki Dimitriou" }]
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "scipy",
+    "pandas",
+    "matplotlib",
+    "jax>=0.4.20",
+    "jaxlib>=0.4.20",
+    "torch",
+    "sbi>=0.25,<0.26",  # the version the released posteriors load with
+]
+
+[project.optional-dependencies]
+mcmc = ["emcee>=3.1", "corner"]
+test = ["pytest", "arviz"]
+all = ["emcee>=3.1", "corner", "pytest", "arviz"]
+
+[project.scripts]
+gwbf-fg = "gwbf_foregrounds.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+gwbf_foregrounds = [
+    "physics/tabulated_spectra/*",
+    "physics/LISA_curly_R_response_data/*.npz",
+    "physics/data/*.csv",
+    "physics/data/Perego_GWB/*.dat",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
