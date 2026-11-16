@@ -96,6 +96,17 @@ def cmd_plot_precision(args):
     print(f"plots saved in {args.output_dir}")
 
 
+def cmd_train(args):
+    from . import train
+
+    if not args.train_only:
+        train.simulate_training_set(args.model, num_simulations=args.n_sims, out_dir=args.data_dir,
+                                    chunk_size=args.chunk_size, n_workers=args.workers, seed=args.seed)
+    if not args.simulate_only:
+        train.train(args.model, out_dir=args.data_dir, save_dir=_out(args, "trained"),
+                    max_epochs=args.max_epochs, device=args.device, seed=args.seed)
+
+
 def cmd_fetch(args):
     from .posterior import fetch_posterior
 
@@ -158,6 +169,20 @@ def main(argv=None):
     sp.add_argument("--mcmc-min", type=float, default=-16.0)
     sp.add_argument("--mcmc-max", type=float, default=-10.0)
     sp.set_defaults(func=cmd_plot_precision)
+
+    sp = sub.add_parser("train", help="simulate a training set and train an NPE posterior")
+    sp.add_argument("--model", default="full", choices=["full", "gbexb", "nofg"])
+    sp.add_argument("--n-sims", type=int, default=500_000)
+    sp.add_argument("--chunk-size", type=int, default=1000)
+    sp.add_argument("--workers", type=int, default=None, help="default: all cores but one")
+    sp.add_argument("--data-dir", default="training_data", help="where simulations are saved")
+    sp.add_argument("--max-epochs", type=int, default=None)
+    sp.add_argument("--device", default="cpu")
+    sp.add_argument("--seed", type=int, default=0)
+    g = sp.add_mutually_exclusive_group()
+    g.add_argument("--simulate-only", action="store_true")
+    g.add_argument("--train-only", action="store_true")
+    sp.set_defaults(func=cmd_train)
 
     sp = sub.add_parser("fetch", help="download the trained posteriors")
     sp.add_argument("models", nargs="*", default=["full", "gbexb", "nofg"])

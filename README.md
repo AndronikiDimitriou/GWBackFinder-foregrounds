@@ -112,6 +112,26 @@ figures of [arXiv:2607.15219](https://arxiv.org/abs/2607.15219) from the inputs 
 
 Fig. 5 (Gμ = 10⁻¹³, 10⁻¹²) is in the notebook and in `figures/`.
 
+## Training a network
+
+```bash
+gwbf-fg train --model full                       # simulate 500 000 + train (defaults = paper's full network)
+gwbf-fg train --model full --simulate-only       # step 1 only, e.g. on a cluster; resumable
+gwbf-fg train --model full --train-only          # step 2 on the saved simulations
+```
+
+or in Python: `train.simulate_training_set("full", ...)` then `train.train("full", ...)`.
+Simulations are saved in chunks (`training_data/<model>/chunk_*.npz`) and run in parallel;
+an interrupted run continues where it stopped. One simulation takes ~2 s on one core,
+so 500 000 are ~250 core-hours. The trained posterior, its loss history and a `model_info.txt`
+are written to `trained/<model>/`.
+
+Defaults, from the training record of the released full network: NPE with a neural spline flow
+(10 transforms, 300 hidden features, no embedding net), batch 256, learning rate 1e-5,
+at most 1000 epochs, stop after 30 epochs without improvement, 10% validation, the priors above.
+The original training code is not included, so a network trained here is comparable to,
+not identical with, the released one.
+
 ## Tests
 
 The tests compare the package with reference values produced by the original analysis

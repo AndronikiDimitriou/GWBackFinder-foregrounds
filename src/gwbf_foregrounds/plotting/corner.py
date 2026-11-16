@@ -76,14 +76,15 @@ def _corner_layer(samples, fig, color, labels, limits, truths, annotate_hdi, fon
 
 
 def plot_mcmc_vs_sbi(mcmc_samples, sbi_samples, param_names, truths=None, labels=None,
-                     keep=None, offsets=None, zoom=None, n_plot=10_000, title=None, out=None,
-                     fonts=None, figsize=(26, 26)):
+                     keep=None, offsets=None, zoom=None, limits=None, n_plot=10_000, title=None,
+                     out=None, fonts=None, figsize=(26, 26)):
     """Overlaid corner plot: MCMC in black, SBI in green with 95% HDI titles.
 
     keep    : parameter names to show (e.g. drop 'A_p', 'A_acc'); default all
     offsets : {name: value} added to that parameter in BOTH sample sets and the truth,
               e.g. to show an amplitude in absolute instead of relative units
     zoom    : {name: factor}; axis range = SBI mean +- factor * SBI std
+    limits  : {name: (lo, hi)} explicit axis ranges (in displayed units), overriding zoom
     """
     fonts = {**FONTS, **(fonts or {})}
     zoom = {**DEFAULT_ZOOM, **(zoom or {})}
@@ -109,14 +110,16 @@ def plot_mcmc_vs_sbi(mcmc_samples, sbi_samples, param_names, truths=None, labels
     rng = np.random.default_rng(0)
     if len(mcmc) > n_plot:
         mcmc = mcmc[rng.choice(len(mcmc), n_plot, replace=False)]
-    limits = [(sbi[:, j].mean() - zoom.get(n, 5.0) * sbi[:, j].std(),
+    explicit = dict(limits or {})
+    ranges = [tuple(explicit[n]) if n in explicit else
+              (sbi[:, j].mean() - zoom.get(n, 5.0) * sbi[:, j].std(),
                sbi[:, j].mean() + zoom.get(n, 5.0) * sbi[:, j].std())
               for j, n in enumerate(names)]
 
     ndim = len(names)
     fig = plt.figure(figsize=figsize)
-    fig = _corner_layer(mcmc, fig, MCMC_COLOR, labels, limits, tr, False, fonts)
-    fig = _corner_layer(sbi, fig, SBI_COLOR, labels, limits, tr, True, fonts)
+    fig = _corner_layer(mcmc, fig, MCMC_COLOR, labels, ranges, tr, False, fonts)
+    fig = _corner_layer(sbi, fig, SBI_COLOR, labels, ranges, tr, True, fonts)
     for k, axi in enumerate(fig.get_axes()[: ndim * ndim]):
         if k % ndim > k // ndim:
             axi.set_visible(False)
