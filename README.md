@@ -1,6 +1,7 @@
 # GWBackFinder-foregrounds
 
 [![tests](https://github.com/AndronikiDimitriou/GWBackFinder-foregrounds/actions/workflows/tests.yml/badge.svg)](https://github.com/AndronikiDimitriou/GWBackFinder-foregrounds/actions/workflows/tests.yml)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24285802.svg)](https://doi.org/10.5281/zenodo.24285802)
 
 Measuring the cosmic-string tension Gμ with LISA in the presence of astrophysical foregrounds,
 with simulation-based inference. Code, trained networks and figures of
@@ -87,6 +88,8 @@ analysis code except import paths) · `models` · `data` · `spectra` · `poster
 Tests (`pytest`) compare the package with reference values produced by the original analysis code.
 
 ## Citation
+
+Code: [doi:10.5281/zenodo.24285802](https://doi.org/10.5281/zenodo.24285802) (all versions; v1.0.0: [10.5281/zenodo.24285803](https://doi.org/10.5281/zenodo.24285803)). Papers:
 
 A. Dimitriou, D. G. Figueroa, P. Simakachorn, I. Stomberg, B. Zaldívar, *Cosmic string gravitational wave
 backgrounds at LISA: II. Reconstruction of conventional signals over astrophysical foregrounds*,

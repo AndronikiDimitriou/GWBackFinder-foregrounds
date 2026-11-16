@@ -4,6 +4,7 @@ title: "GWBackFinder-foregrounds: cosmic-string backgrounds and astrophysical fo
 version: 1.0.0
 date-released: 2026-11-16
 license: MIT
+doi: 10.5281/zenodo.24285802
 repository-code: "https://github.com/AndronikiDimitriou/GWBackFinder-foregrounds"
 authors:
   - family-names: Dimitriou
