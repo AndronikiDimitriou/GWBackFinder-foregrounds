@@ -1,7 +1,12 @@
-# GWBackFinder-foregrounds
+<p align="center">
+  <img src="docs/logo.svg" alt="GWBackFinder-foregrounds" width="680">
+</p>
 
-[![tests](https://github.com/AndronikiDimitriou/GWBackFinder-foregrounds/actions/workflows/tests.yml/badge.svg)](https://github.com/AndronikiDimitriou/GWBackFinder-foregrounds/actions/workflows/tests.yml)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24285802.svg)](https://doi.org/10.5281/zenodo.24285802)
+<p align="center">
+  <a href="https://arxiv.org/abs/2607.15219"><img src="https://img.shields.io/badge/arXiv-2607.15219-b31b1b.svg" alt="arXiv"></a>
+  <a href="https://github.com/AndronikiDimitriou/GWBackFinder-foregrounds/actions/workflows/tests.yml"><img src="https://github.com/AndronikiDimitriou/GWBackFinder-foregrounds/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+  <a href="https://doi.org/10.5281/zenodo.24285802"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.24285802.svg" alt="DOI"></a>
+</p>
 
 Measuring the cosmic-string tension Gμ with LISA in the presence of astrophysical foregrounds,
 with simulation-based inference. Code, trained networks and figures of
