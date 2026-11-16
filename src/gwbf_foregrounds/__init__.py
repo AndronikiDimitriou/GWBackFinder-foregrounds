@@ -15,4 +15,4 @@ _os.environ.setdefault("JAX_PLATFORMS", "cpu")
 from .models import FULL, GBEXB, MODELS, NOFG, get_model  # noqa: E402
 
 __all__ = ["FULL", "GBEXB", "NOFG", "MODELS", "get_model"]
-__version__ = "0.1.0"
+__version__ = "1.0.0"

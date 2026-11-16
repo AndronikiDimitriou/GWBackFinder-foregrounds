@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "GWBackFinder-foregrounds"
-version = "0.1.0"
+version = "1.0.0"
 description = "Cosmic-string tension and astrophysical foregrounds with LISA: SBI, MCMC, Fisher and the paper figures"
 readme = "README.md"
 license = { file = "LICENSE" }
