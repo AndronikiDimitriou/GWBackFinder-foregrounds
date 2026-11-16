@@ -30,25 +30,40 @@ def build_test_set(model, n_test=300, seed=0):
 # Per-parameter coverage (HPD rank statistic via 1D KDE)
 # --------------------------------------------------------------------------- #
 
-def gamma_coverage(posterior, thetas, xs, param_idx, n_post_samples=500, kde_points=5000):
-    """For each test case: posterior mass of the 1D HPD region that just reaches the true
-    value. Uniform on [0, 1] for a calibrated posterior."""
+def _gamma(marg, true_val, kde_points):
     from scipy.stats import gaussian_kde
 
-    gam = []
+    kde = gaussian_kde(marg, bw_method="silverman")
+    yy = kde(np.linspace(marg.min(), marg.max(), kde_points))
+    at_true = kde(float(true_val))[0]
+    return yy[yy >= at_true].sum() / yy.sum()
+
+
+def gamma_coverage_all(posterior, thetas, xs, param_names, n_post_samples=500, kde_points=5000,
+                       verbose=False):
+    """For each test case and parameter: posterior mass of the 1D HPD region that just
+    reaches the true value. Uniform on [0, 1] for a calibrated posterior.
+
+    The posterior is sampled once per test case and used for every parameter.
+    Returns {name: array of length n_test}.
+    """
+    thetas = np.asarray(thetas.detach().cpu() if hasattr(thetas, "detach") else thetas)
+    out = {name: np.empty(len(thetas)) for name in param_names}
     for i in range(len(thetas)):
         s = posterior.sample((n_post_samples,), x=xs[i:i + 1], show_progress_bars=False)
-        marg = s[:, param_idx].detach().cpu().numpy()
-        kde = gaussian_kde(marg, bw_method="silverman")
-        yy = kde(np.linspace(marg.min(), marg.max(), kde_points))
-        at_true = kde(float(thetas[i, param_idx]))[0]
-        gam.append(yy[yy >= at_true].sum() / yy.sum())
-    return np.asarray(gam)
+        s = s.detach().cpu().numpy()
+        for j, name in enumerate(param_names):
+            out[name][i] = _gamma(s[:, j], thetas[i, j], kde_points)
+        if verbose and (i + 1) % 50 == 0:
+            print(f"  {i + 1}/{len(thetas)} test cases done", flush=True)
+    return out
 
 
-def gamma_coverage_all(posterior, thetas, xs, param_names, **kw):
-    return {name: gamma_coverage(posterior, thetas, xs, i, **kw)
-            for i, name in enumerate(param_names)}
+def gamma_coverage(posterior, thetas, xs, param_idx, n_post_samples=500, kde_points=5000):
+    """Coverage statistic for one parameter (see ``gamma_coverage_all``)."""
+    names = [f"p{k}" for k in range(np.shape(thetas)[1])]
+    return gamma_coverage_all(posterior, thetas, xs, names, n_post_samples, kde_points)[
+        names[param_idx]]
 
 
 _probit = scipy.stats.norm.ppf

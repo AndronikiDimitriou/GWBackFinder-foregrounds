@@ -65,3 +65,47 @@ def print_report(summaries, points=(-17, -15, -12, -11, -10, -9)):
     for (name, thr), x in crossings(summaries).items():
         print(f"  {name:12s} {thr:4d}%  " + (f"{x:.3f}  (G mu = {10 ** x:.3e})" if x is not None
                                              else "never in range"))
+
+
+def table_ii(full, nofg, mcmc=None, fisher=None, grid=(-16, -15, -14, -13, -12, -11, -10)):
+    """Paper Table II: precision % for SBI (with fg), MCMC, Fisher, and SBI without fg.
+
+    mcmc   : (logGmu, precision) arrays (``scan.mcmc_precision``)
+    fisher : path/dict with 'logGmu_inj', 'precision'
+    Returns a list of row dicts (NaN where a method has no value).
+    """
+    full, nofg = _load(full), _load(nofg)
+    fis = _load(fisher) if fisher is not None else None
+
+    def at(x, y, g):
+        x = np.asarray(x)
+        i = np.where(np.isclose(x, g))[0]
+        return float(np.asarray(y)[i[0]]) if len(i) else np.nan
+
+    rows = []
+    for g in grid:
+        rows.append(dict(
+            logGmu=g,
+            sbi=at(full["logGmu_inj"], full["precision_mean"], g),
+            mcmc=at(*mcmc, g) if mcmc is not None else np.nan,
+            fisher=at(fis["logGmu_inj"], fis["precision"], g) if fis is not None else np.nan,
+            sbi_nofg=at(nofg["logGmu_inj"], nofg["precision_mean"], g),
+        ))
+    return rows
+
+
+def format_table_ii(rows, latex=False):
+    def f(v):
+        if not np.isfinite(v):
+            return "--"
+        return f"{v:.2e}" if v >= 1e4 else f"{v:.2f}"
+
+    if latex:
+        lines = [r"\begin{tabular}{c|ccc|c}", r"$G\mu_{\rm inj}$ & SBI & MCMC & Fisher & SBI (no fg) \\ \hline"]
+        lines += [f"$10^{{{r['logGmu']}}}$ & {f(r['sbi'])} & {f(r['mcmc'])} & {f(r['fisher'])} & "
+                  f"{f(r['sbi_nofg'])} \\\\" for r in rows]
+        return "\n".join(lines + [r"\end{tabular}"])
+    head = f"{'Gmu_inj':>8} | {'SBI':>9} {'MCMC':>9} {'Fisher':>10} | {'SBI no fg':>9}"
+    return "\n".join([head, "-" * len(head)] + [
+        f"{'1e' + str(r['logGmu']):>8} | {f(r['sbi']):>9} {f(r['mcmc']):>9} {f(r['fisher']):>10} | "
+        f"{f(r['sbi_nofg']):>9}" for r in rows])

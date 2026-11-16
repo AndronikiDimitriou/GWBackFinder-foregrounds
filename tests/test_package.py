@@ -207,3 +207,36 @@ def test_coverage_and_corner_plots_run(tmp_path):
     plot_1d_posteriors(s, s + 0.1, ["logGmu", "A_p", "A_acc"], truths=[0, 0, 0],
                        out=tmp_path / "1d.pdf")
     assert len(list(tmp_path.glob("*.pdf"))) == 3
+
+
+def test_paper_figures_and_table_run(tmp_path):
+    from gwbf_foregrounds import summary
+    from gwbf_foregrounds.plotting import precision as P
+
+    n, g, f = _fake_summary(1), _fake_summary(1.5), _fake_summary(2)
+    P.plot_paper_fig3(n, g, f, _fake_summary(1.8), _fake_summary(2.5), out=tmp_path / "f3.pdf")
+    fis = dict(logGmu_inj=n["logGmu_inj"], precision=n["precision_mean"])
+    P.plot_paper_fig4(f, mcmc=(np.array([-14.0, -12.0]), np.array([50.0, 20.0])), fisher=fis,
+                      out=tmp_path / "f4.pdf")
+    rows = summary.table_ii(f, n, mcmc=(np.array([-14.0]), np.array([50.0])), fisher=fis)
+    assert len(rows) == 7 and rows[2]["mcmc"] == 50.0 and np.isnan(rows[0]["mcmc"])
+    assert "tabular" in summary.format_table_ii(rows, latex=True)
+    assert len(list(tmp_path.glob("*.pdf"))) == 2
+
+
+def test_gamma_coverage_is_uniform_for_exact_posterior():
+    """A posterior that is exactly right gives a uniform coverage statistic."""
+    import torch
+    from scipy.stats import kstest
+    from gwbf_foregrounds.coverage import gamma_coverage_all
+
+    rng = np.random.default_rng(0)
+
+    class GaussPost:   # posterior N(x, 1) for data x = theta + N(0, 1) with a flat prior
+        def sample(self, shape, x, show_progress_bars=False):
+            return torch.as_tensor(x[0].numpy() + rng.standard_normal((shape[0], 2)))
+
+    thetas = rng.normal(size=(300, 2))
+    xs = torch.as_tensor(thetas + rng.standard_normal(thetas.shape))
+    g = gamma_coverage_all(GaussPost(), thetas, xs, ["a", "b"], n_post_samples=400)
+    assert kstest(g["a"], "uniform").pvalue > 0.01 and kstest(g["b"], "uniform").pvalue > 0.01

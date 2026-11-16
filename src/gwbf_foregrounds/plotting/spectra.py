@@ -19,11 +19,6 @@ def plot_reconstruction(recon, out=None, level=0.95, show_noise=True, show_truth
     if data is not None:
         ax.plot(data.f_Hz, data.D_AA, ".", ms=2.5, color="0.75", alpha=0.5,
                 label=r"data $D_{AA}$", zorder=1)
-    if show_noise and "noise_AA" in b:
-        lo, hi = b["noise_AA"][level]
-        ax.fill_between(f, lo, hi, color="black", alpha=0.7, lw=1, zorder=2)
-        ax.plot(f, b["noise_AA"]["median"], color="black", lw=1.5, label=r"noise $AA$", zorder=4)
-
     for k, (color, label) in COMPONENT_STYLE.items():
         if k not in b:
             continue
@@ -39,6 +34,10 @@ def plot_reconstruction(recon, out=None, level=0.95, show_noise=True, show_truth
             cb = compare.bands(levels=(level,))[k]
             ax.plot(compare.f_Hz, cb[level][0], ":", color=color, lw=1.2, zorder=5)
             ax.plot(compare.f_Hz, cb[level][1], ":", color=color, lw=1.2, zorder=5)
+    if show_noise and "noise_AA" in b:   # after the components: last in the legend, as in the paper
+        lo, hi = b["noise_AA"][level]
+        ax.fill_between(f, lo, hi, color="black", alpha=0.7, lw=1, zorder=2)
+        ax.plot(f, b["noise_AA"]["median"], color="black", lw=1.5, label=r"noise $AA$", zorder=4)
     if compare is not None:
         ax.plot([], [], ":", color="0.3", label=f"{compare_label} {int(level * 100)}%")
 

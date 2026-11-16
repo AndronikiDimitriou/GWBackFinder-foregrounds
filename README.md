@@ -91,33 +91,28 @@ Precision is always 100 · (10^hi − 10^lo) / 10^inj for the 95% HDI [lo, hi] o
 
 ## Paper figures
 
-All figures are in [`figures/`](figures/) (PDF + PNG preview). They are made with
+The notebook [`examples/paper_figures.ipynb`](examples/paper_figures.ipynb) makes Table II and all
+figures of [arXiv:2607.15219](https://arxiv.org/abs/2607.15219) from the inputs in [`results/`](results/)
+(the trained posteriors are downloaded automatically). The figures are saved in [`figures/`](figures/).
 
-```bash
-python examples/paper_figures.py --summaries results/ --mcmc chains/ --out figures/
-```
+**Fig. 1 — SBI vs MCMC at Gμ = 10⁻¹⁴**
 
-**Precision on Gμ, with and without foregrounds, with MCMC and Fisher checks**
+![fig1](figures/fig_corner_logGmu_m14p0.png)
 
-![precision](figures/sbi_precision_normal_with_mcmc_fisher.png)
+**Fig. 2 — reconstructed spectra at Gμ = 10⁻¹⁴**
 
-**No foregrounds / WD + SOBHB only / all foregrounds**
+![fig2](figures/fig2_reconstruction.png)
 
-![precision gbexb](figures/sbi_precision_nofg_gbexb_fullfg.png)
+**Fig. 3 — precision: foreground budgets (upper) and foreground amplitudes ±1σ (lower)**
 
-**Foregrounds at fiducial −1σ / fiducial / +1σ**
+![fig3](figures/fig3_precision.png)
 
-![low normal high](figures/sbi_precision_low_normal_high.png)
+**Fig. 4 — SBI vs MCMC vs Fisher**
 
-**Reconstruction of every component at Gμ = 10⁻¹⁴** (SBI 95% bands, MCMC 95% dotted, injected dashed)
+![fig4](figures/fig4_validation.png)
 
-![reconstruction](figures/reconstruction_all_logGmu_m14p0.png)
-
-**MCMC vs SBI at Gμ = 10⁻¹⁴** (same dataset for both)
-
-![corner](figures/corner_hdi_logGmu_m14p0_filtered.png)
-
-See [`figures/README.md`](figures/README.md) for what each file shows and how it was made.
+Fig. 5 (Gμ = 10⁻¹³, 10⁻¹²) and the P–P coverage plots (Figs. 6, 7; inputs from
+`examples/run_coverage.py`) are in the notebook and in `figures/`.
 
 ## Coverage
 

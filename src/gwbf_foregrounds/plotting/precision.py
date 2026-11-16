@@ -120,9 +120,18 @@ def plot_with_validation(fg, nofg, mcmc=None, fisher=None, fisher_nofg=None, out
     return fig
 
 
+def _arrow_positions(x, values, ymax, arrows):
+    """arrows=None: bars above the y range; arrows=n: the first n bars."""
+    return x[:arrows] if isinstance(arrows, int) else _off_scale(x, values, ymax)
+
+
 def plot_low_normal_high(low, normal, high, out=None, logGmu_range=(-17, -10),
-                         ylim=(4e0, 1e3), reference_lines=(10, 100)):
-    """Fiducial -1 sigma / fiducial / +1 sigma foregrounds, stacked."""
+                         ylim=(4e0, 1e3), reference_lines=(10, 100), ax=None, arrows=None,
+                         colors=("#555555", ORANGE, "#B5B5B5"),
+                         edges=("#222222", ORANGE_EDGE, "#6E6E6E"), arrow_color="#DD3327",
+                         fontsize=20, legend_fontsize=18):
+    """Fiducial +1 sigma / fiducial / -1 sigma foregrounds, stacked
+    (paper Fig. 3, lower panel: dark grey / orange / light grey)."""
     low, normal, high = _load(low), _load(normal), _load(high)
     m = _select(normal, *logGmu_range)
     x = normal["logGmu_inj"][m]
@@ -130,29 +139,31 @@ def plot_low_normal_high(low, normal, high, out=None, logGmu_range=(-17, -10),
     dx = abs(x[1] - x[0])
     d_lm = np.clip(p_m - p_l, 0, None)
 
-    fig, ax = plt.subplots(figsize=(13, 5))
-    ax.bar(x, np.clip(p_h - p_m, 0, None), bottom=p_l + d_lm, width=0.5 * dx, color="#CC3300",
-           edgecolor="#881100", linewidth=1.2,
+    fig, ax = (plt.subplots(figsize=(13, 5)) if ax is None else (ax.figure, ax))
+    ax.bar(x, np.clip(p_h - p_m, 0, None), bottom=p_l + d_lm, width=0.6 * dx, color=colors[0],
+           edgecolor=edges[0], linewidth=1.0,
            label=r"with foregrounds $(\mathrm{fiducial} +1\sigma)$")
-    ax.bar(x, d_lm, bottom=p_l, width=0.75 * dx, color=ORANGE, edgecolor=ORANGE_EDGE,
+    ax.bar(x, d_lm, bottom=p_l, width=0.6 * dx, color=colors[1], edgecolor=edges[1],
            linewidth=1.0, label=r"with foregrounds $(\mathrm{fiducial})$")
-    ax.bar(x, p_l, width=0.85 * dx, color="#FFD580", edgecolor="#CC9900", linewidth=0.8,
+    ax.bar(x, p_l, width=0.6 * dx, color=colors[2], edgecolor=edges[2], linewidth=1.0,
            label=r"with foregrounds $(\mathrm{fiducial} -1\sigma)$")
     for y in reference_lines:
-        ax.axhline(y, color="black", linestyle="--", linewidth=3.0, alpha=0.5)
-    _axis_style(ax, x, ylim)
+        ax.axhline(y, color="black", linestyle="--", linewidth=1.5, alpha=0.6)
+    _axis_style(ax, x, ylim, fontsize=fontsize, legend_fontsize=legend_fontsize)
     ax.spines[["top", "right"]].set_visible(False)
-    _arrows(ax, _off_scale(x, p_h, ylim[1]))
-    fig.tight_layout()
-    _save(fig, out)
+    _arrows(ax, _arrow_positions(x, p_h, ylim[1], arrows), color=arrow_color)
+    if out:
+        fig.tight_layout()
+        _save(fig, out)
     return fig
 
 
 def plot_nofg_gbexb_full(nofg, gbexb, full, out=None, logGmu_range=(-17, -10),
-                         ylim=(1e0, 1e3), reference_lines=(10, 100), fontsize_axis=28,
-                         fontsize_tick=25, fontsize_legend=22, errorbar_lw=3, errorbar_cap=4,
-                         errorbar_cthk=2):
-    """No foregrounds (blue) < WD + SOBHB only (green) < all foregrounds (orange)."""
+                         ylim=(1e0, 1e3), reference_lines=(10, 100), ax=None, arrows=None,
+                         fontsize=20, legend_fontsize=18, errorbar_lw=1.2, errorbar_cap=2,
+                         errorbar_cthk=1.2, arrow_color="#DD3327"):
+    """No foregrounds (blue) < WD + SOBHB only (green) < all foregrounds (orange)
+    (paper Fig. 3, upper panel). Error bars: std over the 20 noise realisations."""
     nofg, gbexb, full = _load(nofg), _load(gbexb), _load(full)
     m = _select(gbexb, *logGmu_range)
     x = gbexb["logGmu_inj"][m]
@@ -162,22 +173,77 @@ def plot_nofg_gbexb_full(nofg, gbexb, full, out=None, logGmu_range=(-17, -10),
     dx = abs(x[1] - x[0])
     ekw = dict(elinewidth=errorbar_lw, capthick=errorbar_cthk, zorder=5)
 
-    fig, ax = plt.subplots(figsize=(14, 6))
-    ax.bar(x, np.clip(p_f - p_g, 0, None), yerr=np.sqrt(e_f ** 2 + e_g ** 2), bottom=p_g,
-           capsize=errorbar_cap, error_kw=ekw, width=0.5 * dx, color=ORANGE,
-           edgecolor=ORANGE_EDGE, linewidth=1.2, label="with all foregrounds", zorder=3)
-    ax.bar(x, np.clip(p_g - p_n, 0, None), yerr=np.sqrt(e_g ** 2 + e_n ** 2), bottom=p_n,
-           capsize=errorbar_cap, error_kw=ekw, width=0.65 * dx, color=GREEN,
-           edgecolor=GREEN_EDGE, linewidth=1.2, label="with WD + SOBHB foregrounds", zorder=3)
-    ax.bar(x, p_n, yerr=e_n, capsize=errorbar_cap, error_kw=ekw, width=0.8 * dx, color=BLUE,
-           edgecolor=BLUE_EDGE, linewidth=0.8, label="no foregrounds", zorder=3)
+    fig, ax = (plt.subplots(figsize=(13, 5)) if ax is None else (ax.figure, ax))
+    w = 0.6 * dx
+    ax.bar(x, np.clip(p_f - p_g, 0, None), yerr=e_f, bottom=p_g, capsize=errorbar_cap,
+           error_kw=ekw, width=w, color=ORANGE, edgecolor=ORANGE_EDGE, linewidth=1.0,
+           label="with all foregrounds", zorder=3)
+    ax.bar(x, np.clip(p_g - p_n, 0, None), yerr=e_g, bottom=p_n, capsize=errorbar_cap,
+           error_kw=ekw, width=w, color=GREEN, edgecolor=GREEN_EDGE, linewidth=1.0,
+           label="with WD + SOBHB foregrounds", zorder=3)
+    ax.bar(x, p_n, yerr=e_n, capsize=errorbar_cap, error_kw=ekw, width=w, color=BLUE,
+           edgecolor=BLUE_EDGE, linewidth=1.0, label="no foregrounds", zorder=3)
     for y in reference_lines:
-        ax.axhline(y, color="black", linestyle="--", linewidth=3.0, alpha=0.5, zorder=5)
-    _axis_style(ax, x, ylim, fontsize=fontsize_tick, legend_fontsize=fontsize_legend)
-    ax.set_xlabel(r"$G\mu_{\rm inj}$", fontsize=fontsize_axis)
-    ax.set_ylabel(r"$\delta G\mu~\%$", fontsize=fontsize_axis)
+        ax.axhline(y, color="black", linestyle="--", linewidth=1.5, alpha=0.6, zorder=2)
+    _axis_style(ax, x, ylim, fontsize=fontsize, legend_fontsize=legend_fontsize)
     ax.spines[["top", "right"]].set_visible(False)
-    _arrows(ax, _off_scale(x, p_f, ylim[1]), color="#DD3327")
+    _arrows(ax, _arrow_positions(x, p_f, ylim[1], arrows), color=arrow_color)
+    if out:
+        fig.tight_layout()
+        _save(fig, out)
+    return fig
+
+
+def plot_paper_fig3(nofg, gbexb, full, low, high, out=None, arrows=4):
+    """Paper Fig. 3: upper = foreground budgets, lower = foreground amplitudes +-1 sigma."""
+    fig, (a1, a2) = plt.subplots(2, 1, figsize=(13, 10))
+    plot_nofg_gbexb_full(nofg, gbexb, full, ax=a1, arrows=arrows)
+    plot_low_normal_high(low, full, high, ax=a2, arrows=arrows)
+    fig.tight_layout(h_pad=2.5)
+    _save(fig, out)
+    return fig
+
+
+def plot_paper_fig4(full, mcmc=None, fisher=None, out=None, logGmu_range=(-16, -10),
+                    ylim=(3e0, 2e3), figsize=(7, 6.5)):
+    """Paper Fig. 4: SBI (orange bars, std over realisations) vs MCMC (red circles) and
+    Fisher (green stars), integer injections only.
+
+    mcmc   : (logGmu, precision) arrays, e.g. ``scan.mcmc_precision(chain_files)``
+    fisher : path/dict with 'logGmu_inj', 'precision'
+    """
+    full = _load(full)
+    m = _select(full, *logGmu_range, integers_only=True)
+    x, p, e = full["logGmu_inj"][m], full["precision_mean"][m], full["precision_std"][m]
+    lo, hi = logGmu_range
+
+    def _in(xs):
+        xs = np.asarray(xs)
+        return (xs >= lo - 1e-9) & (xs <= hi + 1e-9) & np.isclose(xs, np.round(xs))
+
+    fig, ax = plt.subplots(figsize=figsize)
+    ax.bar(x, p, width=0.4, color=ORANGE, edgecolor=ORANGE_EDGE, linewidth=1.2, label="SBI",
+           zorder=1)
+    if mcmc is not None:
+        mx, my = map(np.asarray, mcmc)
+        k = _in(mx)
+        ax.scatter(mx[k], my[k], marker="o", s=30, color="red", label="MCMC", zorder=3)
+    if fisher is not None:
+        f = _load(fisher)
+        k = _in(f["logGmu_inj"])
+        ax.scatter(f["logGmu_inj"][k], f["precision"][k], marker="*", s=90, color="#149331",
+                   edgecolor="black", linewidth=0.5, label="Fisher", zorder=4)
+    ax.errorbar(x, p, yerr=e, fmt="none", ecolor="black", elinewidth=1.2, capsize=3,
+                capthick=1.2, zorder=10)
+    ax.set_yscale("log")
+    ax.set_ylim(*ylim)
+    ax.set_xticks(x)
+    ax.set_xticklabels([f"$10^{{{int(v)}}}$" for v in x], fontsize=11)
+    ax.tick_params(axis="y", labelsize=11)
+    ax.set_xlabel(r"$G\mu_{\rm inj}$", fontsize=13)
+    ax.set_ylabel(r"$\delta G\mu~\%$", fontsize=13)
+    ax.grid(axis="y", linestyle="-", alpha=0.3)
+    ax.legend(fontsize=11, loc="upper right")
     fig.tight_layout()
     _save(fig, out)
     return fig
