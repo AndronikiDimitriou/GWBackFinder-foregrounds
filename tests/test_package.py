@@ -266,3 +266,16 @@ def test_vectorized_mcmc_posterior_matches_reference():
     np.testing.assert_allclose(fast(th), ref, rtol=1e-9)
     bad = th.copy(); bad[0, 0] = -30.0          # outside the uniform prior
     assert fast(bad)[0] == -np.inf
+
+
+@pytest.mark.parametrize("name", ["full", "gbexb", "nofg"])
+def test_released_networks_were_trained_with_the_model_priors(name):
+    """Runs when the trained networks are available locally (cache or GWBF_FG_POSTERIOR_DIR)."""
+    from gwbf_foregrounds import posterior
+
+    m = models.get_model(name)
+    local = os.environ.get("GWBF_FG_POSTERIOR_DIR")
+    path = Path(local) / m.posterior_file if local else posterior.cache_dir() / m.posterior_file
+    if not path.exists():
+        pytest.skip(f"{m.posterior_file} not available locally")
+    assert posterior.check_training_prior(m, path)

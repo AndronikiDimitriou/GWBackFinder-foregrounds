@@ -1,5 +1,7 @@
 # GWBackFinder-foregrounds
 
+[![tests](https://github.com/AndronikiDimitriou/GWBackFinder-foregrounds/actions/workflows/tests.yml/badge.svg)](https://github.com/AndronikiDimitriou/GWBackFinder-foregrounds/actions/workflows/tests.yml)
+
 Measuring the cosmic-string tension Gμ with LISA in the presence of astrophysical foregrounds,
 with simulation-based inference. Code, trained networks and figures of
 *Cosmic string gravitational wave backgrounds at LISA: II. Reconstruction of conventional signals
@@ -16,6 +18,12 @@ with MCMC and Fisher cross-checks.
 git clone https://github.com/AndronikiDimitriou/GWBackFinder-foregrounds.git
 cd GWBackFinder-foregrounds
 pip install -e ".[all]"
+```
+
+With exactly the versions everything was tested with (recommended for reproducing the paper):
+
+```bash
+conda env create -f environment.yml && conda activate gwbf-foregrounds
 ```
 
 The trained networks (~230 MB each) are downloaded automatically from the

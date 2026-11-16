@@ -121,6 +121,40 @@ class _Unpickler(pickle.Unpickler):
         return super().find_class(module, name)
 
 
+def training_prior(path_or_model):
+    """The prior stored inside a trained network file, as {index: (kind, a, b)} with
+    kind 'uniform' (a, b = low, high) or 'gaussian' (a, b = mean, std).
+
+    The networks were pickled together with the prior they were trained with; this
+    reads it back (``load_posterior`` replaces it by a placeholder)."""
+    import torch
+
+    post = load_posterior(path_or_model, param_names=None)
+    out = {}
+    for k, d in enumerate(getattr(post.prior, "dists", [])):
+        if isinstance(d, torch.distributions.Uniform):
+            out[k] = ("uniform", float(d.low), float(d.high))
+        elif isinstance(d, torch.distributions.Normal):
+            out[k] = ("gaussian", float(d.loc), float(d.scale))
+        else:
+            out[k] = (type(d).__name__, None, None)
+    return out
+
+
+def check_training_prior(model, path_or_model=None, rtol=1e-6):
+    """True if the prior stored in the network equals ``model.prior`` (raises otherwise)."""
+    m = get_model(model)
+    stored = training_prior(path_or_model or m.name)
+    if len(stored) != m.ndim:
+        raise ValueError(f"network has {len(stored)} parameters, model {m.name} has {m.ndim}")
+    for k, name in enumerate(m.param_names):
+        kind, a, b = m.prior[name]
+        sk, sa, sb = stored[k]
+        if sk != kind or not (np.isclose(sa, a, rtol=rtol) and np.isclose(sb, b, rtol=rtol)):
+            raise ValueError(f"{m.name}.{name}: network prior {stored[k]} != model prior {m.prior[name]}")
+    return True
+
+
 def load_posterior(path_or_model, param_names=None):
     """Load a trained posterior.
 
